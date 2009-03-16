@@ -1,0 +1,124 @@
+<html>
+<head>
+<style>
+img
+{
+    filter:progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand');
+    position: absolute;
+}
+
+body
+{
+	background: blue;
+}
+
+div
+{
+    postion: relative;
+}
+</style>
+<script src="jquery-1.3.2.js"></script>
+</head>
+<body>
+    <img id="aDiv" src="pics/halo-dude.jpg" width="300" height="379"/>
+    <div id="angle"></div>
+<script>
+var xv = {};
+
+(function() {
+	xv.rotatable = function(img) {
+        var _useCanvas = !img.filters;
+
+        var rot = {};
+
+        rot.element = (function() {
+        var diag = Math.sqrt(img.width * img.width + img.height * img.height);
+        
+        if(!_useCanvas) {
+            $(img)
+                .css("position", "absolute")
+                .wrap("<div></div>")
+                .parent("div")
+                .css({ position: "relative",
+                       width: diag + "px", 
+                       height: diag + "px" });
+            
+            return $(img).parent("div")[0];
+        }
+
+        var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
+        cnv.attr("width", diag)
+           .attr("height", diag);
+
+        var c = cnv[0].getContext("2d");
+        c.translate(diag / 2,  diag / 2);
+
+        $(img).replaceWith(cnv);
+
+        return cnv[0];
+        })();
+
+		 rot.rotate = (function() {
+            var diag = Math.sqrt(img.width * img.width + img.height * img.height);
+            if (_useCanvas) {
+                var c = rot.element.getContext("2d");
+
+                return function(rad) {
+                    c.clearRect(-diag / 2, -diag / 2, diag, diag);
+
+                    c.save();
+                    c.rotate(rad);
+                    c.drawImage(img, -img.width / 2, -img.height / 2);
+                    c.restore();
+                };
+            }
+
+            var $imgElem = $(rot.element).children("img");
+            var filterItem = $imgElem[0].filters.item(0);
+            return function(rad) {
+                var costheta = Math.cos(rad);
+                var sintheta = Math.sin(rad);
+
+                filterItem.M11 = costheta;
+                filterItem.M12 = -sintheta;
+                filterItem.M21 = sintheta;
+                filterItem.M22 = costheta;
+                
+                $imgElem.css({ left: (diag - $imgElem.width()) / 2, 
+                               top: (diag - $imgElem.height()) / 2 });
+            };
+		 })();
+		 
+		 $(img).load(function(){ rot.rotate(0); });
+		 return rot;
+	};
+	
+	var rotatables = [];
+	$("img")
+        .each(function() {
+            var rot = xv.rotatable(this);
+            rotatables.push(rot);
+
+            var regulator = 0;
+            var $this = $(rot.element);
+            var halfWidth = $this.width() / 2;
+            var halfHeight = $this.height() / 2;
+            $(rot.element).mousemove(function(e) {
+                //  if(regulator++ % 2 != 0) return; 
+
+                var offset = $this.offset();
+                var center = { x: offset.left + halfWidth, y: offset.top + halfHeight };
+                var vec = { x: e.pageX - center.x, y: e.pageY - center.y };
+
+                var angle = Math.PI - Math.atan2(vec.x, vec.y);
+
+                $("#angle").text(angle * 180 / Math.PI );
+                rot.rotate(angle);
+                
+                return false;
+            }); 
+        });
+})();
+</script>
+</body>
+</html>
