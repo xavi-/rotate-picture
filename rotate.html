@@ -23,10 +23,10 @@ div
     <img id="aDiv" src="pics/halo-dude.jpg" width="300" height="379"/>
     <div id="angle"></div>
 <script>
-var xv = {};
+var rotatable = {};
 
 (function() {
-	xv.rotatable = function(img) {
+	rotatable.create = function(img) {
         var _useCanvas = !img.filters;
 
         var rot = {};
@@ -96,7 +96,7 @@ var xv = {};
 	var rotatables = [];
 	$("img")
         .each(function() {
-            var rot = xv.rotatable(this);
+            var rot = rotatable.create(this);
             rotatables.push(rot);
 
             var regulator = 0;
