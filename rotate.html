@@ -32,30 +32,30 @@ var rotatable = {};
         var rot = {};
 
         rot.element = (function() {
-        var diag = Math.sqrt(img.width * img.width + img.height * img.height);
-        
-        if(!_useCanvas) {
-            $(img)
-                .css("position", "absolute")
-                .wrap("<div></div>")
-                .parent("div")
-                .css({ position: "relative",
-                       width: diag + "px", 
-                       height: diag + "px" });
+            var diag = Math.sqrt(img.width * img.width + img.height * img.height);
             
-            return $(img).parent("div")[0];
-        }
+            if(!_useCanvas) {
+                $(img)
+                    .css("position", "absolute")
+                    .wrap("<div></div>")
+                    .parent("div")
+                    .css({ position: "relative",
+                           width: diag + "px", 
+                           height: diag + "px" });
+                
+                return $(img).parent("div")[0];
+            }
 
-        var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
-        cnv.attr("width", diag)
-           .attr("height", diag);
+            var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
+            cnv.attr("width", diag)
+               .attr("height", diag);
 
-        var c = cnv[0].getContext("2d");
-        c.translate(diag / 2,  diag / 2);
+            var c = cnv[0].getContext("2d");
+            c.translate(diag / 2,  diag / 2);
 
-        $(img).replaceWith(cnv);
+            $(img).replaceWith(cnv);
 
-        return cnv[0];
+            return cnv[0];
         })();
 
 		 rot.rotate = (function() {
