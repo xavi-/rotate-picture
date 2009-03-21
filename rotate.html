@@ -35,32 +35,32 @@ var rotatable = {};
         rot.element = (function() {
             var diag = Math.round(Math.sqrt(img.width * img.width + img.height * img.height));
             
-            if(!_useCanvas) {
-                $(img)
-                    .css("position", "absolute")
-                    .wrap("<div></div>")
-                    .parent("div")
-                    .css({ position: "relative",
-                           width: "100%", 
-                           height: "100%" })
-                    .wrap("<div></div>")
-                    .parent("div")
-                    .css({ width: diag, 
-                           height: diag });
-                
-                return $(img).parent("div").parent("div")[0];
+            if(_useCanvas) {
+                var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
+                cnv.attr("width", diag)
+                   .attr("height", diag);
+
+                var c = cnv[0].getContext("2d");
+                c.translate(diag / 2,  diag / 2);
+
+                $(img).replaceWith(cnv);
+
+                return cnv[0];
             }
-
-            var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
-            cnv.attr("width", diag)
-               .attr("height", diag);
-
-            var c = cnv[0].getContext("2d");
-            c.translate(diag / 2,  diag / 2);
-
-            $(img).replaceWith(cnv);
-
-            return cnv[0];
+            
+            $(img)
+                .css("position", "absolute")
+                .wrap("<div></div>")
+                .parent("div")
+                .css({ position: "relative",
+                       width: "100%", 
+                       height: "100%" })
+                .wrap("<div></div>")
+                .parent("div")
+                .css({ width: diag, 
+                       height: diag });
+            
+            return $(img).parent("div").parent("div")[0];
         })();
 
 		rot.rotate = (function() {
