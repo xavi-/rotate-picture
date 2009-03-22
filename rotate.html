@@ -20,89 +20,105 @@ div
 <script src="jquery-1.3.2.js"></script>
 </head>
 <body>
-    <img id="aDiv" src="pics/halo-dude.jpg" width="300" height="379"/>
+    <img id="aDiv" src="pics/halo-dude.jpg"/>
     <div id="angle"></div>
 <script>
 var rotatable = {};
 
 (function() {
-    rotatable.create = function(img, initAng) {
+	rotatable.create = function(img, initAng) {
         var _useCanvas = !img.filters;
         var _hasLoaded = false;
+        var listeners = { ready: [] };
 
         var rot = {};
         
-        rot.element = (function() {
-            var diag = Math.round(Math.sqrt(img.width * img.width + img.height * img.height));
+        rot.element = null;
+        
+        rot.rotate = function(rad) { initAng = rad; };
+        
+        rot.onReady = function(listener) { 
+            if(_hasLoaded) { listener.call(rot); }
             
-            if(_useCanvas) {
-                var cnv = $("<canvas>").attr("img-src", $(img).attr("src"));
-                cnv.attr("width", diag)
-                   .attr("height", diag);
-
-                var c = cnv[0].getContext("2d");
-                c.translate(diag / 2,  diag / 2);
-
-                $(img).replaceWith(cnv);
-
-                return cnv[0];
-            }
+            listeners.ready.push(listener);
+        };
+        
+        var initRotatable = function() {
+            var diag = Math.sqrt(img.width * img.width + img.height * img.height);
             
-            $(img)
-                .css("position", "absolute")
-                .wrap("<div></div>")
-                .parent("div")
-                .css({ position: "relative",
-                       width: "100%", 
-                       height: "100%" })
-                .wrap("<div></div>")
-                .parent("div")
-                .css({ width: diag, 
-                       height: diag });
-            
-            return $(img).parent("div").parent("div")[0];
-        })();
-
-		rot.rotate = (function() {
-            var diag = Math.round(Math.sqrt(img.width * img.width + img.height * img.height));
-            if (_useCanvas) {
-                var c = rot.element.getContext("2d");
-
-                return function(rad) {
-                    if (!_hasLoaded) { initAng = rad; return; }
-                    
-                    c.clearRect(-diag / 2, -diag / 2, diag, diag);
-
-                    c.save();
-                    c.rotate(rad);
-                    c.drawImage(img, -img.width / 2, -img.height / 2);
-                    c.restore();
-                };
-            }
-            
-            var $imgElem = $(rot.element).children("div").children("img");
-
-            var filterItem = $imgElem[0].filters.item(0);
-            return function(rad) {
-                if (!_hasLoaded) { return;}
-                    
-                var costheta = Math.cos(rad);
-                var sintheta = Math.sin(rad);
-
-                filterItem.M11 = costheta;
-                filterItem.M12 = -sintheta;
-                filterItem.M21 = sintheta;
-                filterItem.M22 = costheta;
+            rot.element = (function() {
+                if(_useCanvas) {
+                    var cnv = $("<canvas>");
+                    cnv.attr("width", Math.round(diag))
+                       .attr("height", Math.round(diag));
                 
-                $imgElem.css({ left: Math.round(diag - $imgElem.width()) / 2, 
-                               top: Math.round(diag - $imgElem.height()) / 2 });
-            };
-		})();
-		
-        $(img).load(function() { _hasLoaded = true; rot.rotate(initAng || 0); });
-        img.src = img.src; // trigger onload handler if image is cached
-		
-        return rot;
+                    var c = cnv[0].getContext("2d");
+                    c.translate(diag / 2,  diag / 2);
+
+                    $(img).replaceWith(cnv);
+
+                    return cnv[0];
+                }
+                
+                $(img)
+                    .css("position", "absolute")
+                    .wrap("<div></div>")
+                    .parent("div")
+                    .css({ position: "relative",
+                           width: "100%", 
+                           height: "100%" })
+                    .wrap("<div></div>")
+                    .parent("div")
+                    .css({ width: Math.round(diag),
+                           height: Math.round(diag) });
+                
+                return $(img).parent("div").parent("div")[0];
+            })();
+
+            rot.rotate = (function() {
+                if (_useCanvas) {
+                    var c = rot.element.getContext("2d");
+
+                    return function(rad) {
+                        c.clearRect(-diag / 2, -diag / 2, diag, diag);
+
+                        c.save();
+                        c.rotate(rad);
+                        c.drawImage(img, -img.width / 2, -img.height / 2);
+                        c.restore();
+                    };
+                }
+                
+                var $imgElem = $(rot.element).children("div").children("img");
+
+                var filterItem = $imgElem[0].filters.item(0);
+                return function(rad) {
+                    var costheta = Math.cos(rad);
+                    var sintheta = Math.sin(rad);
+
+                    filterItem.M11 = costheta;
+                    filterItem.M12 = -sintheta;
+                    filterItem.M21 = sintheta;
+                    filterItem.M22 = costheta;
+                    
+                    $imgElem.css({ left: (diag - $imgElem.width()) / 2, 
+                                   top: (diag - $imgElem.height()) / 2 });
+                };
+            })();
+            
+            rot.rotate(initAng || 0);
+            
+            for(var i = 0; i < listeners.ready.length; i++) {
+                listeners.ready[i].call(rot);
+            }
+            
+            _hasLoaded = true;
+		};
+        
+        $(img).load(initRotatable);
+        img.src = img.src; // Trigger onload handler if image is cached
+        
+		return rot;
 	};
 	
 	var rotatables = [];
@@ -110,24 +126,25 @@ var rotatable = {};
         .each(function() {
             var rot = rotatable.create(this);
             rotatables.push(rot);
-
-            var regulator = 0;
-            var $this = $(rot.element);
-            var halfWidth = $this.width() / 2;
-            var halfHeight = $this.height() / 2;
-            $(rot.element).mousemove(function(e) {
-                //  if(regulator++ % 2 != 0) return; 
-
-                var offset = $this.offset();
-                var center = { x: offset.left + halfWidth, y: offset.top + halfHeight };
-                var vec = { x: e.pageX - center.x, y: e.pageY - center.y };
-
-                var angle = Math.PI - Math.atan2(vec.x, vec.y);
-
-                $("#angle").text(angle * 180 / Math.PI );
-                rot.rotate(angle);
+            
+            var img = this;
+            rot.onReady(function() { 
+                var $rot = $(rot.element); 
+                var halfWidth = img.width / 2;
+                var halfHeight = img.height / 2;
                 
-                return false;
+                $rot.mousemove(function(e) {
+                    var offset = $rot.offset();
+                    var center = { x: offset.left + halfWidth, y: offset.top + halfHeight };
+                    var vec = { x: e.pageX - center.x, y: e.pageY - center.y };
+
+                    var angle = Math.PI - Math.atan2(vec.x, vec.y);
+
+                    $("#angle").text(angle * 180 / Math.PI );
+                    rot.rotate(angle);
+                    
+                    return false;
+                });
             }); 
         });
 })();
