@@ -7,11 +7,6 @@ img
     position: absolute;
 }
 
-body
-{
-	background: blue;
-}
-
 div
 {
     postion: relative;
@@ -89,9 +84,9 @@ var rotatable = {};
                     };
                 }
                 
-                var $imgElem = $(rot.element).children("div").children("img");
-
-                var filterItem = $imgElem[0].filters.item(0);
+                var $img = $(img);
+                var imgStyle = img.style;
+                var filterItem = img.filters.item(0);
                 return function(rad) {
                     var costheta = Math.cos(rad);
                     var sintheta = Math.sin(rad);
@@ -101,8 +96,8 @@ var rotatable = {};
                     filterItem.M21 = sintheta;
                     filterItem.M22 = costheta;
                     
-                    $imgElem.css({ left: (diag - $imgElem.width()) / 2, 
-                                   top: (diag - $imgElem.height()) / 2 });
+                    imgStyle.left = (diag - $img.width()) / 2;
+                    imgStyle.top = (diag - $img.height()) / 2;
                 };
             })();
             
