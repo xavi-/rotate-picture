@@ -124,12 +124,11 @@ $("img")
         var img = this;
         rot.onReady(function() { 
             var $rot = $(rot.element); 
-            var halfWidth = img.width / 2;
-            var halfHeight = img.height / 2;
+            var halfSide = Math.sqrt(img.width * img.width + img.height * img.height) / 2;
             
             $rot.mousemove(function(e) {
                 var offset = $rot.offset();
-                var center = { x: offset.left + halfWidth, y: offset.top + halfHeight };
+                var center = { x: offset.left + halfSide, y: offset.top + halfSide };
                 var vec = { x: e.pageX - center.x, y: e.pageY - center.y };
 
                 var angle = Math.PI - Math.atan2(vec.x, vec.y);
