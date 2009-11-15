@@ -41,7 +41,7 @@ var rotatable = {};
         var initRotatable = function() {
             var diag = Math.sqrt(img.width * img.width + img.height * img.height);
             
-            rot.element = (function() {
+            rot.element = (function(diag) {
                 if(_useCanvas) {
                     var cnv = $("<canvas>");
                     cnv.attr("width", Math.round(diag))
@@ -68,9 +68,9 @@ var rotatable = {};
                            height: Math.round(diag) });
                 
                 return $(img).parent("div").parent("div")[0];
-            })();
+            })(diag);
 
-            rot.rotate = (function() {
+            rot.rotate = (function(diag) {
                 if (_useCanvas) {
                     var c = rot.element.getContext("2d");
 
@@ -99,7 +99,7 @@ var rotatable = {};
                     imgStyle.left = (diag - $img.width()) / 2;
                     imgStyle.top = (diag - $img.height()) / 2;
                 };
-            })();
+            })(diag);
             
             rot.rotate(initAng || 0);
             
