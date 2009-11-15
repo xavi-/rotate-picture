@@ -30,9 +30,9 @@ var rotatable = {};
         
         rot.element = null;
         
-        rot.rotate = function(rad) { initAng = rad; };
+        rot.rotate = function rotate(rad) { initAng = rad; };
         
-        rot.onReady = function(listener) { 
+        rot.onReady = function onReady(listener) { 
             if(_hasLoaded) { listener.call(rot); }
             
             listeners.ready.push(listener);
@@ -74,7 +74,7 @@ var rotatable = {};
                 if (_useCanvas) {
                     var c = rot.element.getContext("2d");
 
-                    return function(rad) {
+                    return function rotate(rad) {
                         c.clearRect(-diag / 2, -diag / 2, diag, diag);
 
                         c.save();
@@ -87,7 +87,7 @@ var rotatable = {};
                 var $img = $(img);
                 var imgStyle = img.style;
                 var filterItem = img.filters.item(0);
-                return function(rad) {
+                return function rotate(rad) {
                     var costheta = Math.cos(rad);
                     var sintheta = Math.sin(rad);
 
