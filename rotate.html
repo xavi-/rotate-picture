@@ -71,8 +71,8 @@ div
                 imgStyle = img.style,
                 filterItem = img.filters.item(0);
             return function rotate(rad) {
-                var costheta = Math.cos(rad);
-                var sintheta = Math.sin(rad);
+                var costheta = Math.cos(rad),
+                    sintheta = Math.sin(rad);
 
                 filterItem.M11 = costheta;
                 filterItem.M12 = -sintheta;
@@ -109,9 +109,9 @@ div
                 _listeners.ready[i].call(rot);
             }
         
-            _hasLoaded = true; 
+            _hasLoaded = true;
         });
-        img.src = img.src; // Trigger onload handler if image is cached
+        img.src = ""; img.src = img.src; // Trigger onload handler if image is cached
 	};
 })();
 
